@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -62,12 +63,14 @@ public class Taco implements Serializable {
     @Override
     public String toString() {
         return "Taco{" +
-               "id=" + id +  // Assuming you have an 'id' field.
-               ", name='" + name + '\'' +  // Assuming you have a 'name' field.
-               ", ingredients=" + ingredients +  // Assuming you have an 'ingredients' collection.
-               // ... other fields you want to include
-               '}';
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", ingredients=" + ingredients.stream()
+                                              .map(Ingredient::getId) // or any unique identifier
+                                              .collect(Collectors.toList()) +
+                '}';
     }
+
     
    
     

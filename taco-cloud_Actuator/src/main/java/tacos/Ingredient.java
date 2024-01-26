@@ -27,7 +27,13 @@ public class Ingredient implements Serializable {
         
     }
 
-
+    public Ingredient(String id, String name, Type sauce) {
+        this.id = id;
+        this.name = name;
+        this.type = sauce;
+        //this.appUserId= appUserid;
+        
+    }
 
     @Id
     private String id;
@@ -40,6 +46,17 @@ public class Ingredient implements Serializable {
 
     public static enum Type {
         WRAP, PROTEIN, VEGGIES, CHEESE, SAUCE
+    }
+    
+    
+    
+    @Override
+    public String toString() {
+        return "Ingredient{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", type=" + type +
+                '}';
     }
 
 	

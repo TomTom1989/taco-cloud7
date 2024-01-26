@@ -7,6 +7,7 @@ import java.util.stream.StreamSupport;
 
 import jakarta.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
@@ -22,6 +23,7 @@ import tacos.Ingredient;
 import tacos.Ingredient.Type;
 import tacos.Taco;
 import tacos.TacoOrder;
+import tacos.actuator.TacoMetrics;
 import tacos.data.AppUserService;
 import tacos.data.IngredientRepository;
 import tacos.data.TacoRepository;
@@ -30,18 +32,22 @@ import tacos.data.TacoRepository;
 @RequestMapping("/design")
 @SessionAttributes("tacoOrder")
 public class DesignTacoController {
-	
-private final IngredientRepository ingredientRepo;
-private final TacoRepository tacoRepository;
-private final AppUserService appUserService;
 
-public DesignTacoController(
-        IngredientRepository ingredientRepo,
-        TacoRepository tacoRepository,
-        AppUserService appUserService) {
+    private final IngredientRepository ingredientRepo;
+    private final TacoRepository tacoRepository;
+    private final AppUserService appUserService;
+    private final TacoMetrics tacoMetrics; // Inject TacoMetrics
+
+    @Autowired // Constructor injection for TacoMetrics
+    public DesignTacoController(
+            IngredientRepository ingredientRepo,
+            TacoRepository tacoRepository,
+            AppUserService appUserService,
+            TacoMetrics tacoMetrics) {
         this.ingredientRepo = ingredientRepo;
         this.tacoRepository = tacoRepository;
         this.appUserService = appUserService;
+        this.tacoMetrics = tacoMetrics;
     }
 
 @ModelAttribute("tacoOrder")
@@ -97,6 +103,8 @@ public String processTaco(@Valid Taco taco, Errors errors,
     }
 
     Taco savedTaco = tacoRepository.save(taco);
+    tacoMetrics.onAfterCreate(savedTaco); // Invoke TacoMetrics after saving the taco
+
     tacoOrder.addTacoName(savedTaco.getName());
     model.addAttribute("tacoOrder", tacoOrder);
 

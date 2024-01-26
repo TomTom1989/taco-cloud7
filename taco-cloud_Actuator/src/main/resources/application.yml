@@ -4,7 +4,7 @@ logging:
     org:
       org.springframework.security: DEBUG
       org.springframework.security.oauth2: DEBUG 
-
+    tacos.actuator.TacoMetrics: INFO
 
 spring:
   datasource:
@@ -82,6 +82,16 @@ management:
   endpoint:
     health:
       show-details: always 
+      
+      
+  info:
+    git:
+      mode: full
+   
+
+
+   
+
       
  
       
