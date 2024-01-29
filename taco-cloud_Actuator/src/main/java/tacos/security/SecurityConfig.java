@@ -11,6 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -45,7 +47,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
+   @Bean
     public UserDetailsService userDetailsService(UserRepository userRepo) {
         return username -> {
             AppUser user = userRepo.findByUsername(username);
@@ -54,37 +56,42 @@ public class SecurityConfig {
         };
     }
 
+
+    
   
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeRequests(authorizeRequests -> {
                 authorizeRequests
+             
                     // Protect POST requests to /api/ingredients with the writeIngredients scope
                     .requestMatchers(new AntPathRequestMatcher("/api/ingredients", "POST"))
                     .hasAuthority("SCOPE_writeIngredients")
                     // Secure GET requests to /api/ingredients (adjust authority as needed)
                     .requestMatchers(new AntPathRequestMatcher("/api/ingredients", "GET"))
-                    .authenticated() // or .hasAuthority("SCOPE_yourScope") if a specific scope is required
-                    // Secure the /api/submit-form endpoint
-                    .requestMatchers(new AntPathRequestMatcher("/api/show-submission-form")).authenticated()
+                    .authenticated() 
+                
+                   .requestMatchers(new AntPathRequestMatcher("/actuator/**")).hasRole("ADMIN")
+
                     // Existing matchers
-                    .requestMatchers(new AntPathRequestMatcher("/design", "GET")).hasRole("USER")
-                    .requestMatchers(new AntPathRequestMatcher("/orders", "GET")).hasRole("USER")
+                    .requestMatchers(new AntPathRequestMatcher("/design", "GET")).hasRole("ADMIN")
+                    .requestMatchers(new AntPathRequestMatcher("/orders", "GET")).hasRole("ADMIN")
                     .requestMatchers(new AntPathRequestMatcher("/data-api/**")).authenticated()
                     .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
+                 
                     .requestMatchers(new AntPathRequestMatcher("/**")).permitAll();
             })
             // Continue with the existing formLogin, oauth2Login, logout, csrf, and headers configurations
             .formLogin(formLogin -> formLogin
                     .loginPage("/login")
-                    .successHandler(successHandler()) // Set the custom success handler
+                 //   .successHandler(successHandler()) // Set the custom success handler
                     .permitAll()
                 
             )
             .oauth2Login(oauth2Login -> oauth2Login
                     .loginPage("/login")
-                    .successHandler(successHandler()) // Set the custom success handler
+                 //   .successHandler(successHandler()) // Set the custom success handler
                     .permitAll()
                 )
             .oauth2ResourceServer(oauth2ResourceServer ->
@@ -134,7 +141,7 @@ public class SecurityConfig {
     }
 
 
-    @Bean
+   /* @Bean
     public AuthenticationSuccessHandler successHandler() {
         return new SimpleUrlAuthenticationSuccessHandler() {
             public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -142,7 +149,7 @@ public class SecurityConfig {
                 getRedirectStrategy().sendRedirect(request, response, "/show-submission-form");
             }
         };
-    }
+    }*/
 
 
 
